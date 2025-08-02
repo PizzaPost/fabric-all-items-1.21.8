@@ -1,0 +1,40 @@
+{
+	"schemaVersion": 1,
+	"id": "all-items",
+	"version": "${version}",
+	"name": "All Items",
+	"description": "All Items challenge mod",
+	"authors": [
+		"PizzaPost"
+	],
+	"contact": {
+		"homepage": "https://pizzapost.com/",
+		"sources": "https://github.com/PizzaPost/fabric-all-items-1.21.8"
+	},
+	"license": "MIT",
+	"icon": "assets/all-items/icon.png",
+	"environment": "*",
+	"entrypoints": {
+		"main": [
+			"de.pizzapost.all_items.AllItems"
+		],
+		"fabric-datagen": [
+			"de.pizzapost.all_items.AllItemsDataGenerator"
+		],
+		"client": [
+			"de.pizzapost.all_items.AllItemsClient"
+		]
+	},
+	"mixins": [
+		"all-items.mixins.json"
+	],
+	"depends": {
+		"fabricloader": ">=0.16.14",
+		"minecraft": "~1.21.8",
+		"java": ">=21",
+		"fabric-api": "*"
+	},
+	"suggests": {
+		"another-mod": "*"
+	}
+}
