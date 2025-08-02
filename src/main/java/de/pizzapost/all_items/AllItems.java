@@ -77,21 +77,22 @@ public class AllItems implements ModInitializer {
                     return;
                 }
 
-                AllItems.sec++;
-                if (sec >= 60) {
-                    sec = 0;
-                    min++;
-                    if (min >= 60) {
-                        min = 0;
-                        hours++;
-                        if (hours >= 24) {
-                            hours = 0;
-                            days++;
+                if (!server.isPaused()) {
+                    AllItems.sec++;
+                    if (sec >= 60) {
+                        sec = 0;
+                        min++;
+                        if (min >= 60) {
+                            min = 0;
+                            hours++;
+                            if (hours >= 24) {
+                                hours = 0;
+                                days++;
+                            }
                         }
                     }
+                    saveTimer();
                 }
-                saveTimer();
-
                 Text actionbarMessage = Text.translatable("actionbar.all_items.timer", days, hours, min, sec).formatted(Formatting.GOLD);
                 for (ServerPlayerEntity player : server.getPlayerManager().getPlayerList()) {
                     player.sendMessage(actionbarMessage, true);
