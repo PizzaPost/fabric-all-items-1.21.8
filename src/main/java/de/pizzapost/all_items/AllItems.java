@@ -13,6 +13,7 @@ import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
+import net.minecraft.util.Identifier;
 import net.minecraft.util.WorldSavePath;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -23,6 +24,7 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 
 public class AllItems implements ModInitializer {
     public static final String MOD_ID = "all_items";
@@ -46,9 +48,14 @@ public class AllItems implements ModInitializer {
 
     public static void saveData(MinecraftServer server) {
         try {
+            StringBuilder builder = new StringBuilder();
+            for (Item item : items) {
+                builder.append(Registries.ITEM.getId(item)).append(",");
+            }
+            if (!items.isEmpty()) builder.setLength(builder.length() - 1);
             Path path = getSavePath(server);
             Files.createDirectories(path.getParent());
-            String data = started + ";" + collected_items + ";" + days + ";" + hours + ";" + min + ";" + sec;
+            String data = started + ";" + collected_items + ";" + days + ";" + hours + ";" + min + ";" + sec + ";" + builder;
             Files.write(path, data.getBytes());
         } catch (IOException e) {
             LOGGER.error("Failed to save timer state", e);
@@ -61,13 +68,31 @@ public class AllItems implements ModInitializer {
 
         try {
             String[] parts = Files.readString(path).split(";");
-            if (parts.length == 6) {
+            if (parts.length == 7) {
                 started = Boolean.parseBoolean(parts[0]);
+                System.out.println("started: " + started);
                 collected_items = Integer.parseInt(parts[1]);
                 days = Integer.parseInt(parts[2]);
                 hours = Integer.parseInt(parts[3]);
                 min = Integer.parseInt(parts[4]);
                 sec = Integer.parseInt(parts[5]);
+                items.clear();
+                String[] itemIds = parts[6].split(",");
+                for (String id : itemIds) {
+                    Optional<Identifier> optionalId = Optional.of(Identifier.of(id));
+                    if (optionalId.isPresent()) {
+                        Identifier identifier = optionalId.get();
+                        Item item = Registries.ITEM.get(identifier);
+                        if (item != null && item != net.minecraft.item.Items.AIR) {
+                            items.add(item);
+                        }
+                    }
+                }
+
+                System.out.println(items);
+                if (started) {
+                    startGame(server, true);
+                }
             }
         } catch (IOException | NumberFormatException e) {
             LOGGER.error("Failed to load timer state", e);
@@ -79,9 +104,6 @@ public class AllItems implements ModInitializer {
         ModCommands.registerModCommands();
         ServerLifecycleEvents.SERVER_STARTED.register(server -> {
             loadData(server);
-            if (started) {
-                startGame(server, true);
-            }
         });
         ServerTickEvents.END_WORLD_TICK.register(world -> {
         });
@@ -104,8 +126,12 @@ public class AllItems implements ModInitializer {
     }
 
     public static void startGame(MinecraftServer server, boolean force) {
-        if (!force && started) return;
-        if (timerThread != null && timerThread.isAlive()) return;
+        if (!force && started) {
+            return;
+        }
+        if (timerThread != null && timerThread.isAlive()) {
+            return;
+        }
 
         started = true;
 
