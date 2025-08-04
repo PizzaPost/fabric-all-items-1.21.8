@@ -8,6 +8,7 @@ import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents;
 import net.minecraft.entity.boss.BossBar;
 import net.minecraft.entity.boss.ServerBossBar;
 import net.minecraft.item.Item;
+import net.minecraft.item.ItemStack;
 import net.minecraft.registry.Registries;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.network.ServerPlayerEntity;
@@ -40,7 +41,8 @@ public class AllItems implements ModInitializer {
     private static Thread timerThread;
 
     static List<String> blockedItems = List.of("minecraft:air", "minecraft:barrier", "minecraft:bedrock", "minecraft:chain_command_block", "minecraft:command_block", "minecraft:command_block_minecart", "minecraft:debug_stick", "minecraft:farmland", "minecraft:infested_chiseled_stone_bricks", "minecraft:infested_cobblestone", "minecraft:infested_cracked_stone_bricks", "minecraft:infested_deepslate", "minecraft:infested_mossy_stone_bricks", "minecraft:infested_stone", "minecraft:infested_stone_bricks", "minecraft:jigsaw", "minecraft:knowledge_book", "minecraft:light", "minecraft:mycelium", "minecraft:player_head", "minecraft:podzol", "minecraft:reinforced_deepslate", "minecraft:repeating_command_block", "minecraft:rooted_dirt", "minecraft.spawner", "minecraft:structure_block", "minecraft:structure_void", "minecraft:test_block", "minecraft:test_instance_block", "minecraft:trial_spawner", "minecraft:vault");
-    static ServerBossBar collectedItemsBossbar = new ServerBossBar(Text.translatable("bossbar.all_items.collected_items", collected_items, items.size()), BossBar.Color.GREEN, BossBar.Style.PROGRESS);
+    static ServerBossBar collectedItemsBossbar = new ServerBossBar(Text.translatable("bossbar.all_items.collected_items", collected_items, items.size()), BossBar.Color.PURPLE, BossBar.Style.PROGRESS);
+    static ServerBossBar nextItemBossbar = new ServerBossBar(Text.translatable("bossbar.all_items.next_item"), BossBar.Color.GREEN, BossBar.Style.PROGRESS);
 
     private static Path getSavePath(MinecraftServer server) {
         return server.getSavePath(WorldSavePath.ROOT).resolve("all_items_data.txt");
@@ -106,6 +108,18 @@ public class AllItems implements ModInitializer {
             loadData(server);
         });
         ServerTickEvents.END_WORLD_TICK.register(world -> {
+            if (started) {
+                for (ServerPlayerEntity player : world.getServer().getPlayerManager().getPlayerList()) {
+                    if (!items.isEmpty()) {
+                        ItemStack stack = player.getInventory().getSelectedStack();
+                        if (stack != null && stack.getItem() == items.getFirst()) {
+                            collected_items++;
+                            items.removeFirst();
+                            break;
+                        }
+                    }
+                }
+            }
         });
         ServerLifecycleEvents.SERVER_STOPPING.register(server -> {
             started = false;
@@ -165,13 +179,26 @@ public class AllItems implements ModInitializer {
                     saveData(server);
                 }
 
-                collectedItemsBossbar.setPercent((float) collected_items / items.size());
-                collectedItemsBossbar.setName(Text.translatable("bossbar.all_items.collected_items", collected_items, items.size()));
+                if (items.isEmpty()) {
+                    collectedItemsBossbar.setName(Text.literal("1304/1304"));
+                    nextItemBossbar.setName(Text.translatable("bossbar.all_items.finished"));
+                } else {
+                    collectedItemsBossbar.setName(Text.translatable("bossbar.all_items.collected_items", collected_items, "1304"));
+                }
 
                 Text actionbarMessage = Text.translatable("actionbar.all_items.timer", days, hours, min, sec).formatted(Formatting.GOLD);
                 for (ServerPlayerEntity player : server.getPlayerManager().getPlayerList()) {
                     player.sendMessage(actionbarMessage, true);
                     collectedItemsBossbar.addPlayer(player);
+                }
+                if (!items.isEmpty()) {
+                    Item nextItem = items.get(0);
+                    nextItemBossbar.setPercent((float) collected_items / 1304);
+                    nextItemBossbar.setName(Text.translatable(nextItem.getTranslationKey()));
+                    for (ServerPlayerEntity player : server.getPlayerManager().getPlayerList()) {
+                        player.sendMessage(actionbarMessage, true);
+                        nextItemBossbar.addPlayer(player);
+                    }
                 }
             }
         });

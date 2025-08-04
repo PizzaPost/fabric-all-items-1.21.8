@@ -1,5 +1,7 @@
 {
   "actionbar.all_items.timer": "%02dd %02dh %02dm %02ds",
 
-  "bossbar.all_items.collected_items": "Items collected: %1$s/%2$s"
+  "bossbar.all_items.collected_items": "Items collected: %1$s/%2$s",
+  "bossbar.all_items.next_item": "lädt...",
+  "bossbar.all_items.finished": "Fertig!"
 }
