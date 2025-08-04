@@ -16,6 +16,7 @@ import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.WorldSavePath;
+import net.minecraft.world.GameMode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -72,7 +73,6 @@ public class AllItems implements ModInitializer {
             String[] parts = Files.readString(path).split(";");
             if (parts.length == 7) {
                 started = Boolean.parseBoolean(parts[0]);
-                System.out.println("started: " + started);
                 collected_items = Integer.parseInt(parts[1]);
                 days = Integer.parseInt(parts[2]);
                 hours = Integer.parseInt(parts[3]);
@@ -90,11 +90,16 @@ public class AllItems implements ModInitializer {
                         }
                     }
                 }
-
-                System.out.println(items);
-                if (started) {
-                    startGame(server, true);
-                }
+            } else if (parts.length == 6) {
+                started = Boolean.parseBoolean(parts[0]);
+                collected_items = Integer.parseInt(parts[1]);
+                days = Integer.parseInt(parts[2]);
+                hours = Integer.parseInt(parts[3]);
+                min = Integer.parseInt(parts[4]);
+                sec = Integer.parseInt(parts[5]);
+            }
+            if (started) {
+                startGame(server, true);
             }
         } catch (IOException | NumberFormatException e) {
             LOGGER.error("Failed to load timer state", e);
@@ -162,7 +167,7 @@ public class AllItems implements ModInitializer {
                     return;
                 }
 
-                if (!server.isPaused()) {
+                if (!server.isPaused() && collected_items < 1304) {
                     sec++;
                     if (sec >= 60) {
                         sec = 0;
@@ -182,6 +187,9 @@ public class AllItems implements ModInitializer {
                 if (items.isEmpty()) {
                     collectedItemsBossbar.setName(Text.literal("1304/1304"));
                     nextItemBossbar.setName(Text.translatable("bossbar.all_items.finished"));
+                    for (ServerPlayerEntity player : server.getPlayerManager().getPlayerList()) {
+                        player.changeGameMode(GameMode.SPECTATOR);
+                    }
                 } else {
                     collectedItemsBossbar.setName(Text.translatable("bossbar.all_items.collected_items", collected_items, "1304"));
                 }
