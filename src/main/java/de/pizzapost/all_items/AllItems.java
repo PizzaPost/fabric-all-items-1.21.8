@@ -40,8 +40,9 @@ public class AllItems implements ModInitializer {
     static int collected_items = 0;
     static List<Item> items = new ArrayList<>();
     private static Thread timerThread;
+    static int maxItems;
 
-    static List<String> blockedItems = List.of("minecraft:air", "minecraft:barrier", "minecraft:bedrock", "minecraft:chain_command_block", "minecraft:command_block", "minecraft:command_block_minecart", "minecraft:debug_stick", "minecraft:farmland", "minecraft:infested_chiseled_stone_bricks", "minecraft:infested_cobblestone", "minecraft:infested_cracked_stone_bricks", "minecraft:infested_deepslate", "minecraft:infested_mossy_stone_bricks", "minecraft:infested_stone", "minecraft:infested_stone_bricks", "minecraft:jigsaw", "minecraft:knowledge_book", "minecraft:light", "minecraft:mycelium", "minecraft:player_head", "minecraft:podzol", "minecraft:reinforced_deepslate", "minecraft:repeating_command_block", "minecraft:rooted_dirt", "minecraft.spawner", "minecraft:structure_block", "minecraft:structure_void", "minecraft:test_block", "minecraft:test_instance_block", "minecraft:trial_spawner", "minecraft:vault");
+    static List<String> blockedItems = List.of("minecraft:air", "minecraft:barrier", "minecraft:bedrock", "minecraft:chain_command_block", "minecraft:command_block", "minecraft:command_block_minecart", "minecraft:debug_stick", "minecraft:farmland", "minecraft:infested_chiseled_stone_bricks", "minecraft:infested_cobblestone", "minecraft:infested_cracked_stone_bricks", "minecraft:infested_deepslate", "minecraft:infested_mossy_stone_bricks", "minecraft:infested_stone", "minecraft:infested_stone_bricks", "minecraft:jigsaw", "minecraft:knowledge_book", "minecraft:light", "minecraft:player_head", "minecraft:reinforced_deepslate", "minecraft:repeating_command_block", "minecraft:rooted_dirt", "minecraft.spawner", "minecraft:structure_block", "minecraft:structure_void", "minecraft:test_block", "minecraft:test_instance_block", "minecraft:trial_spawner", "minecraft:vault");
     static ServerBossBar collectedItemsBossbar = new ServerBossBar(Text.translatable("bossbar.all_items.collected_items", collected_items, items.size()), BossBar.Color.PURPLE, BossBar.Style.PROGRESS);
     static ServerBossBar nextItemBossbar = new ServerBossBar(Text.translatable("bossbar.all_items.next_item"), BossBar.Color.GREEN, BossBar.Style.PROGRESS);
 
@@ -58,7 +59,7 @@ public class AllItems implements ModInitializer {
             if (!items.isEmpty()) builder.setLength(builder.length() - 1);
             Path path = getSavePath(server);
             Files.createDirectories(path.getParent());
-            String data = started + ";" + collected_items + ";" + days + ";" + hours + ";" + min + ";" + sec + ";" + builder;
+            String data = started + ";" + collected_items + ";" + maxItems + ";" + days + ";" + hours + ";" + min + ";" + sec + ";" + builder;
             Files.write(path, data.getBytes());
         } catch (IOException e) {
             LOGGER.error("Failed to save timer state", e);
@@ -71,32 +72,30 @@ public class AllItems implements ModInitializer {
 
         try {
             String[] parts = Files.readString(path).split(";");
-            if (parts.length == 7) {
+            if (parts.length == 8) {
                 started = Boolean.parseBoolean(parts[0]);
                 collected_items = Integer.parseInt(parts[1]);
-                days = Integer.parseInt(parts[2]);
-                hours = Integer.parseInt(parts[3]);
-                min = Integer.parseInt(parts[4]);
-                sec = Integer.parseInt(parts[5]);
+                maxItems = Integer.parseInt(parts[2]);
+                days = Integer.parseInt(parts[3]);
+                hours = Integer.parseInt(parts[4]);
+                min = Integer.parseInt(parts[5]);
+                sec = Integer.parseInt(parts[6]);
                 items.clear();
-                String[] itemIds = parts[6].split(",");
+                String[] itemIds = parts[7].split(",");
                 for (String id : itemIds) {
                     Optional<Identifier> optionalId = Optional.of(Identifier.of(id));
-                    if (optionalId.isPresent()) {
-                        Identifier identifier = optionalId.get();
-                        Item item = Registries.ITEM.get(identifier);
-                        if (item != null && item != net.minecraft.item.Items.AIR) {
-                            items.add(item);
-                        }
-                    }
+                    Identifier identifier = optionalId.get();
+                    Item item = Registries.ITEM.get(identifier);
+                    items.add(item);
                 }
-            } else if (parts.length == 6) {
+            } else if (parts.length == 7) {
                 started = Boolean.parseBoolean(parts[0]);
                 collected_items = Integer.parseInt(parts[1]);
-                days = Integer.parseInt(parts[2]);
-                hours = Integer.parseInt(parts[3]);
-                min = Integer.parseInt(parts[4]);
-                sec = Integer.parseInt(parts[5]);
+                maxItems = Integer.parseInt(parts[2]);
+                days = Integer.parseInt(parts[3]);
+                hours = Integer.parseInt(parts[4]);
+                min = Integer.parseInt(parts[5]);
+                sec = Integer.parseInt(parts[6]);
             }
             if (started) {
                 startGame(server, true);
@@ -167,7 +166,7 @@ public class AllItems implements ModInitializer {
                     return;
                 }
 
-                if (!server.isPaused() && collected_items < 1304) {
+                if (!server.isPaused() && collected_items < maxItems) {
                     sec++;
                     if (sec >= 60) {
                         sec = 0;
@@ -185,13 +184,13 @@ public class AllItems implements ModInitializer {
                 }
 
                 if (items.isEmpty()) {
-                    collectedItemsBossbar.setName(Text.literal("1304/1304"));
+                    collectedItemsBossbar.setName(Text.literal(maxItems+"/"+maxItems));
                     nextItemBossbar.setName(Text.translatable("bossbar.all_items.finished"));
                     for (ServerPlayerEntity player : server.getPlayerManager().getPlayerList()) {
                         player.changeGameMode(GameMode.SPECTATOR);
                     }
                 } else {
-                    collectedItemsBossbar.setName(Text.translatable("bossbar.all_items.collected_items", collected_items, "1304"));
+                    collectedItemsBossbar.setName(Text.translatable("bossbar.all_items.collected_items", collected_items, maxItems));
                 }
 
                 Text actionbarMessage = Text.translatable("actionbar.all_items.timer", days, hours, min, sec).formatted(Formatting.GOLD);
@@ -201,7 +200,7 @@ public class AllItems implements ModInitializer {
                 }
                 if (!items.isEmpty()) {
                     Item nextItem = items.get(0);
-                    nextItemBossbar.setPercent((float) collected_items / 1304);
+                    nextItemBossbar.setPercent((float) collected_items / maxItems);
                     nextItemBossbar.setName(Text.translatable(nextItem.getTranslationKey()));
                     for (ServerPlayerEntity player : server.getPlayerManager().getPlayerList()) {
                         player.sendMessage(actionbarMessage, true);
@@ -228,7 +227,7 @@ public class AllItems implements ModInitializer {
                 items.add(item);
             }
         }
-        System.out.println(items);
+        maxItems = items.size();
         Collections.shuffle(items);
     }
 }
