@@ -3,5 +3,9 @@
 
   "bossbar.all_items.collected_items": "Items collected: %1$s/%2$s",
   "bossbar.all_items.next_item": "loading...",
-  "bossbar.all_items.finished": "Finished!"
+  "bossbar.all_items.finished": "Finished!",
+
+  "command.all_items.skipped": "%1$s skipped",
+
+  "notification.all_items.collected_item": "%1$s collected %2$s"
 }

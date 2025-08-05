@@ -117,6 +117,10 @@ public class AllItems implements ModInitializer {
                     if (!items.isEmpty()) {
                         ItemStack stack = player.getInventory().getSelectedStack();
                         if (stack != null && stack.getItem() == items.getFirst()) {
+                            Text collector = player.getDisplayName().copy().formatted(Formatting.GOLD);
+                            Text collectedItem = Text.translatable(stack.getItem().getTranslationKey()).copy().formatted(Formatting.GOLD);
+                            Text collectedItemText = Text.translatable("notification.all_items.collected_item", collector, collectedItem);
+                            player.sendMessage(collectedItemText, false);
                             collected_items++;
                             items.removeFirst();
                             break;
@@ -229,5 +233,14 @@ public class AllItems implements ModInitializer {
         }
         maxItems = items.size();
         Collections.shuffle(items);
+    }
+
+    public static Text skipItem() {
+        Text skippedItem = Text.translatable(items.getFirst().getTranslationKey()).formatted(Formatting.GOLD);
+        if (!items.isEmpty()) {
+            items.removeFirst();
+        }
+        collected_items++;
+        return skippedItem;
     }
 }

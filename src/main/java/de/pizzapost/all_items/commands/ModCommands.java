@@ -3,8 +3,10 @@ package de.pizzapost.all_items.commands;
 import com.mojang.brigadier.arguments.IntegerArgumentType;
 import de.pizzapost.all_items.AllItems;
 import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
+import net.minecraft.item.Item;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.command.ServerCommandSource;
+import net.minecraft.text.Text;
 
 import static net.minecraft.server.command.CommandManager.argument;
 import static net.minecraft.server.command.CommandManager.literal;
@@ -33,6 +35,12 @@ public class ModCommands {
 
         CommandRegistrationCallback.EVENT.register((dispatcher, registryAccess, environment) -> dispatcher.register(literal("shuffle_items").requires(source -> source.hasPermissionLevel(4)).executes(context -> {
             AllItems.shuffleItems();
+            return 1;
+        })));
+
+        CommandRegistrationCallback.EVENT.register((dispatcher, registryAccess, environment) -> dispatcher.register(literal("skip_item").requires(source -> source.hasPermissionLevel(4)).executes(context -> {
+            Text skippedItem=AllItems.skipItem();
+            context.getSource().sendFeedback(() -> Text.translatable("command.all_items.skipped", skippedItem), false);
             return 1;
         })));
     }
