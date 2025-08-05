@@ -7,5 +7,7 @@
 
   "command.all_items.skipped": "%1$s skipped",
 
+  "item.all_items.all_items": "Collected Items",
+
   "notification.all_items.collected_item": "%1$s collected %2$s"
 }

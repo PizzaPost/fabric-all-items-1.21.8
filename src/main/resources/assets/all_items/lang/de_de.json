@@ -7,5 +7,7 @@
 
   "command.all_items.skipped": "%1$s übersprungen",
 
+  "item.all_items.all_items": "Eingesammelte Gegenstände",
+
   "notification.all_items.collected_item": "%1$s hat %2$s gesammelt"
 }

@@ -1,6 +1,7 @@
 package de.pizzapost.all_items;
 
 import de.pizzapost.all_items.commands.ModCommands;
+import de.pizzapost.all_items.items.ModItems;
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
@@ -12,6 +13,7 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.registry.Registries;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.stat.Stats;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.Identifier;
@@ -108,6 +110,7 @@ public class AllItems implements ModInitializer {
     @Override
     public void onInitialize() {
         ModCommands.registerModCommands();
+        ModItems.registerModItems();
         ServerLifecycleEvents.SERVER_STARTED.register(server -> {
             loadData(server);
         });
@@ -121,6 +124,7 @@ public class AllItems implements ModInitializer {
                             Text collectedItem = Text.translatable(stack.getItem().getTranslationKey()).copy().formatted(Formatting.GOLD);
                             Text collectedItemText = Text.translatable("notification.all_items.collected_item", collector, collectedItem);
                             player.sendMessage(collectedItemText, false);
+                            player.incrementStat(Stats.PICKED_UP.getOrCreateStat(ModItems.ALL_ITEMS));
                             collected_items++;
                             items.removeFirst();
                             break;
