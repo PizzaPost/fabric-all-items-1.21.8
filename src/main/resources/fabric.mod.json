@@ -12,7 +12,7 @@
 		"sources": "https://github.com/PizzaPost/fabric-all-items-1.21.8"
 	},
 	"license": "MIT",
-	"icon": "assets/all-items/icon.png",
+	"icon": "assets/all_items/icon.png",
 	"environment": "*",
 	"entrypoints": {
 		"main": [

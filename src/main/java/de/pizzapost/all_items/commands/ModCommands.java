@@ -3,7 +3,6 @@ package de.pizzapost.all_items.commands;
 import com.mojang.brigadier.arguments.IntegerArgumentType;
 import de.pizzapost.all_items.AllItems;
 import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
-import net.minecraft.item.Item;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.text.Text;
@@ -14,7 +13,7 @@ import static net.minecraft.server.command.CommandManager.literal;
 public class ModCommands {
     public static void initializeCommands() {
         CommandRegistrationCallback.EVENT.register((dispatcher, registryAccess, environment) -> {
-            dispatcher.register(literal("start").requires(source -> source.hasPermissionLevel(2)).executes(context -> {
+            dispatcher.register(literal("start").requires(source -> source.hasPermissionLevel(4)).executes(context -> {
                 MinecraftServer server = context.getSource().getServer();
                 AllItems.startGame(server, false);
                 return 1;
