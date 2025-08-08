@@ -16,6 +16,7 @@ import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.stat.Stats;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
+import net.minecraft.util.Hand;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.WorldSavePath;
 import net.minecraft.world.GameMode;
@@ -45,7 +46,7 @@ public class AllItems implements ModInitializer {
     static int maxItems;
 
     static List<String> blockedItems = List.of("minecraft:air", "minecraft:barrier", "minecraft:bedrock", "minecraft:chain_command_block", "minecraft:command_block", "minecraft:command_block_minecart", "minecraft:debug_stick", "minecraft:farmland", "minecraft:infested_chiseled_stone_bricks", "minecraft:infested_cobblestone", "minecraft:infested_cracked_stone_bricks", "minecraft:infested_deepslate", "minecraft:infested_mossy_stone_bricks", "minecraft:infested_stone", "minecraft:infested_stone_bricks", "minecraft:jigsaw", "minecraft:knowledge_book", "minecraft:light", "minecraft:player_head", "minecraft:reinforced_deepslate", "minecraft:repeating_command_block", "minecraft:rooted_dirt", "minecraft.spawner", "minecraft:structure_block", "minecraft:structure_void", "minecraft:test_block", "minecraft:test_instance_block", "minecraft:trial_spawner", "minecraft:vault");
-    static ServerBossBar collectedItemsBossbar = new ServerBossBar(Text.translatable("bossbar.all_items.collected_items", collected_items, items.size()), BossBar.Color.PURPLE, BossBar.Style.PROGRESS);
+    static ServerBossBar collectedItemsBossbar = new ServerBossBar(Text.translatable("bossbar.all_items.collected_items", collected_items, items.size()), BossBar.Color.BLUE, BossBar.Style.PROGRESS);
     static ServerBossBar nextItemBossbar = new ServerBossBar(Text.translatable("bossbar.all_items.next_item"), BossBar.Color.GREEN, BossBar.Style.PROGRESS);
 
     private static Path getSavePath(MinecraftServer server) {
@@ -231,7 +232,7 @@ public class AllItems implements ModInitializer {
 
     public static void shuffleItems() {
         for (Item item : Registries.ITEM) {
-            if (!blockedItems.contains(item.toString()) && !item.toString().contains("spawn_egg")) {
+            if (!blockedItems.contains(item.toString()) && !item.toString().contains("spawn_egg") && item!=ModItems.ALL_ITEMS) {
                 items.add(item);
             }
         }
