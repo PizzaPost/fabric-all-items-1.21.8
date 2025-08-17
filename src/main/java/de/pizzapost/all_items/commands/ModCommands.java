@@ -32,11 +32,6 @@ public class ModCommands {
             }))))));
         });
 
-        CommandRegistrationCallback.EVENT.register((dispatcher, registryAccess, environment) -> dispatcher.register(literal("shuffle_items").requires(source -> source.hasPermissionLevel(4)).executes(context -> {
-            AllItems.shuffleItems();
-            return 1;
-        })));
-
         CommandRegistrationCallback.EVENT.register((dispatcher, registryAccess, environment) -> dispatcher.register(literal("skip_item").requires(source -> source.hasPermissionLevel(4)).executes(context -> {
             Text skippedItem=AllItems.skipItem();
             context.getSource().sendFeedback(() -> Text.translatable("command.all_items.skipped", skippedItem), false);
