@@ -6,6 +6,10 @@
   "bossbar.all_items.finished": "Fertig!",
 
   "command.all_items.skipped": "%1$s übersprungen",
+  "command.all_items.already_started": "Spiel hat bereits begonnen",
+  "command.all_items.obtaining": "Bekomme den Gegenstand so",
+  "command.all_items.obtaining_next": "Bekomme den nächsten Gegenstand so",
+  "command.all_items.obtaining_failed": "Dieser Gegenstand wurde nicht gefunden. Er ist wahrscheinlich nicht im Standard Minecraft.",
 
   "item.all_items.all_items": "Eingesammelte Gegenstände",
 

@@ -14,9 +14,9 @@ import net.minecraft.registry.Registries;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.stat.Stats;
+import net.minecraft.text.ClickEvent;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
-import net.minecraft.util.Hand;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.WorldSavePath;
 import net.minecraft.world.GameMode;
@@ -24,24 +24,23 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
+import java.net.URI;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
+import java.util.stream.Collectors;
 
 public class AllItems implements ModInitializer {
     public static final String MOD_ID = "all_items";
     public static final Logger LOGGER = LoggerFactory.getLogger(MOD_ID);
 
-    static boolean started = false;
+    public static boolean started = false;
     static int sec = 0;
     static int min = 0;
     static int hours = 0;
     static int days = 0;
     static int collected_items = 0;
-    static List<Item> items = new ArrayList<>();
+    public static List<Item> items = new ArrayList<>();
     private static Thread timerThread;
     static int maxItems;
 
@@ -122,10 +121,15 @@ public class AllItems implements ModInitializer {
                             Text collector = player.getDisplayName().copy().formatted(Formatting.GOLD);
                             Text collectedItem = Text.translatable(stack.getItem().getTranslationKey()).copy().formatted(Formatting.GOLD);
                             Text collectedItemText = Text.translatable("notification.all_items.collected_item", collector, collectedItem);
-                            player.sendMessage(collectedItemText, false);
                             player.incrementStat(Stats.PICKED_UP.getOrCreateStat(ModItems.ALL_ITEMS));
                             collected_items++;
                             items.removeFirst();
+                            String link = AllItems.getObtainingLink();
+                            for (ServerPlayerEntity player2 : world.getServer().getPlayerManager().getPlayerList()) {
+                                player2.sendMessage(collectedItemText, false);
+                                Text howToObtainNextItem = Text.translatable("command.all_items.obtaining_next").styled(style -> style.withClickEvent(new ClickEvent.OpenUrl(URI.create(link))).withUnderline(true));
+                                player.sendMessage(howToObtainNextItem, false);
+                            }
                             break;
                         }
                     }
@@ -191,7 +195,7 @@ public class AllItems implements ModInitializer {
                 }
 
                 if (items.isEmpty()) {
-                    collectedItemsBossbar.setName(Text.literal(maxItems+"/"+maxItems));
+                    collectedItemsBossbar.setName(Text.literal(maxItems + "/" + maxItems));
                     nextItemBossbar.setName(Text.translatable("bossbar.all_items.finished"));
                     for (ServerPlayerEntity player : server.getPlayerManager().getPlayerList()) {
                         player.changeGameMode(GameMode.SPECTATOR);
@@ -230,7 +234,7 @@ public class AllItems implements ModInitializer {
 
     public static void shuffleItems() {
         for (Item item : Registries.ITEM) {
-            if (!blockedItems.contains(item.toString()) && !item.toString().contains("spawn_egg") && item!=ModItems.ALL_ITEMS) {
+            if (!blockedItems.contains(item.toString()) && !item.toString().contains("spawn_egg") && item != ModItems.ALL_ITEMS) {
                 items.add(item);
             }
         }
@@ -245,5 +249,16 @@ public class AllItems implements ModInitializer {
         }
         collected_items++;
         return skippedItem;
+    }
+
+    public static Boolean isVanillaItem(Item item) {
+        return item.toString().startsWith("minecraft:");
+    }
+
+    public static String getObtainingLink() {
+        String englishName = items.getFirst().toString().replace("minecraft:", "");
+        englishName = Arrays.stream(englishName.split("_")).map(s -> s.substring(0, 1).toUpperCase() + s.substring(1)).collect(Collectors.joining("_"));
+        String link = "https://minecraft.wiki/w/" + englishName + "#Obtaining";
+        return link;
     }
 }

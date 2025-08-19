@@ -6,6 +6,10 @@
   "bossbar.all_items.finished": "Finished!",
 
   "command.all_items.skipped": "%1$s skipped",
+  "command.all_items.already_started": "Game has already started",
+  "command.all_items.obtaining": "Obtain this item like this",
+  "command.all_items.obtaining_next": "Obtain the next item like this",
+  "command.all_items.obtaining_failed": "This item could not be found. It is likely not included in vanilla Minecraft.",
 
   "item.all_items.all_items": "Collected Items",
 
