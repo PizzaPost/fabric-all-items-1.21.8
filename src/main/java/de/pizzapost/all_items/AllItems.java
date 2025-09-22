@@ -115,23 +115,25 @@ public class AllItems implements ModInitializer {
         ServerTickEvents.END_WORLD_TICK.register(world -> {
             if (started) {
                 for (ServerPlayerEntity player : world.getServer().getPlayerManager().getPlayerList()) {
+                    Text collectedItemText=null;
+                    String link=null;
                     if (!items.isEmpty()) {
                         ItemStack stack = player.getInventory().getSelectedStack();
                         if (stack != null && stack.getItem() == items.getFirst()) {
                             Text collector = player.getDisplayName().copy().formatted(Formatting.GOLD);
                             Text collectedItem = Text.translatable(stack.getItem().getTranslationKey()).copy().formatted(Formatting.GOLD);
-                            Text collectedItemText = Text.translatable("notification.all_items.collected_item", collector, collectedItem);
+                            collectedItemText = Text.translatable("notification.all_items.collected_item", collector, collectedItem);
                             player.incrementStat(Stats.PICKED_UP.getOrCreateStat(ModItems.ALL_ITEMS));
                             collected_items++;
                             items.removeFirst();
-                            String link = AllItems.getObtainingLink();
-                            for (ServerPlayerEntity player2 : world.getServer().getPlayerManager().getPlayerList()) {
-                                player2.sendMessage(collectedItemText, false);
-                                Text howToObtainNextItem = Text.translatable("command.all_items.obtaining_next").styled(style -> style.withClickEvent(new ClickEvent.OpenUrl(URI.create(link))).withUnderline(true));
-                                player.sendMessage(howToObtainNextItem, false);
-                            }
-                            break;
+                            link = AllItems.getObtainingLink();
                         }
+                    }
+                    if (collectedItemText!=null && link!=null) {
+                        player.sendMessage(collectedItemText, false);
+                        String finalLink = link;
+                        Text howToObtainNextItem = Text.translatable("command.all_items.obtaining_next").styled(style -> style.withClickEvent(new ClickEvent.OpenUrl(URI.create(finalLink))).withUnderline(true));
+                        player.sendMessage(howToObtainNextItem, false);
                     }
                 }
             }
@@ -258,7 +260,6 @@ public class AllItems implements ModInitializer {
     public static String getObtainingLink() {
         String englishName = items.getFirst().toString().replace("minecraft:", "");
         englishName = Arrays.stream(englishName.split("_")).map(s -> s.substring(0, 1).toUpperCase() + s.substring(1)).collect(Collectors.joining("_"));
-        String link = "https://minecraft.wiki/w/" + englishName + "#Obtaining";
-        return link;
+        return "https://minecraft.wiki/w/" + englishName + "#Obtaining";
     }
 }
