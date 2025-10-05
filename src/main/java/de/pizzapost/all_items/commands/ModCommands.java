@@ -16,7 +16,7 @@ import static net.minecraft.server.command.CommandManager.literal;
 public class ModCommands {
     public static void initializeCommands() {
         CommandRegistrationCallback.EVENT.register((dispatcher, registryAccess, environment) -> {
-            dispatcher.register(literal("start").requires(source -> source.hasPermissionLevel(4)).executes(context -> {
+            dispatcher.register(literal("start").executes(context -> {
                 MinecraftServer server = context.getSource().getServer();
                 if (!AllItems.started) {
                     AllItems.startGame(server, false);
