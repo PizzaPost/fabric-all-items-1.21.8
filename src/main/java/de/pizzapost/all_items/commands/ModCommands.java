@@ -4,6 +4,7 @@ import com.mojang.brigadier.arguments.IntegerArgumentType;
 import de.pizzapost.all_items.AllItems;
 import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.server.command.CommandManager;
 import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.text.ClickEvent;
 import net.minecraft.text.Text;
@@ -28,7 +29,7 @@ public class ModCommands {
         });
 
         CommandRegistrationCallback.EVENT.register((dispatcher, registryAccess, environment) -> {
-            dispatcher.register(literal("set_timer").requires(source -> source.hasPermissionLevel(4)).then(argument("days", IntegerArgumentType.integer(0)).then(argument("hours", IntegerArgumentType.integer(0, 23)).then(argument("minutes", IntegerArgumentType.integer(0, 59)).then(argument("seconds", IntegerArgumentType.integer(0, 59)).executes(context -> {
+            dispatcher.register(literal("set_timer").requires(CommandManager.requirePermissionLevel(CommandManager.GAMEMASTERS_CHECK)).then(argument("days", IntegerArgumentType.integer(0)).then(argument("hours", IntegerArgumentType.integer(0, 23)).then(argument("minutes", IntegerArgumentType.integer(0, 59)).then(argument("seconds", IntegerArgumentType.integer(0, 59)).executes(context -> {
                 ServerCommandSource source = context.getSource();
                 int days = IntegerArgumentType.getInteger(context, "days");
                 int hours = IntegerArgumentType.getInteger(context, "hours");
@@ -39,7 +40,7 @@ public class ModCommands {
             }))))));
         });
 
-        CommandRegistrationCallback.EVENT.register((dispatcher, registryAccess, environment) -> dispatcher.register(literal("skip_item").requires(source -> source.hasPermissionLevel(4)).executes(context -> {
+        CommandRegistrationCallback.EVENT.register((dispatcher, registryAccess, environment) -> dispatcher.register(literal("skip_item").requires(CommandManager.requirePermissionLevel(CommandManager.GAMEMASTERS_CHECK)).executes(context -> {
             Text skippedItem = AllItems.skipItem();
             context.getSource().sendFeedback(() -> Text.translatable("command.all_items.skipped", skippedItem), false);
             return 1;
