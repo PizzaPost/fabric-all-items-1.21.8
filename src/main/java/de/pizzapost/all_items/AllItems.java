@@ -10,7 +10,6 @@ import net.minecraft.entity.boss.BossBar;
 import net.minecraft.entity.boss.ServerBossBar;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
-import net.minecraft.loot.LootTable;
 import net.minecraft.registry.Registries;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.network.ServerPlayerEntity;
@@ -45,7 +44,7 @@ public class AllItems implements ModInitializer {
     private static Thread timerThread;
     static int maxItems;
 
-    static List<String> blockedItems = List.of("minecraft:air", "minecraft:barrier", "minecraft:bedrock", "minecraft:chain_command_block", "minecraft:command_block", "minecraft:command_block_minecart", "minecraft:debug_stick", "minecraft:end_portal_frame", "minecraft:farmland", "minecraft:infested_chiseled_stone_bricks", "minecraft:infested_cobblestone", "minecraft:infested_cracked_stone_bricks", "minecraft:infested_deepslate", "minecraft:infested_mossy_stone_bricks", "minecraft:infested_stone", "minecraft:infested_stone_bricks", "minecraft:jigsaw", "minecraft:knowledge_book", "minecraft:light", "minecraft:player_head", "minecraft:reinforced_deepslate", "minecraft:repeating_command_block", "minecraft:rooted_dirt", "minecraft:snow", "minecraft.spawner", "minecraft:structure_block", "minecraft:structure_void", "minecraft:test_block", "minecraft:test_instance_block", "minecraft:trial_spawner", "minecraft:vault");
+    static List<String> blockedItems = List.of("minecraft:air", "minecraft:barrier", "minecraft:bedrock", "minecraft:chain_command_block", "minecraft:command_block", "minecraft:command_block_minecart", "minecraft:debug_stick", "minecraft:end_portal_frame", "minecraft:farmland", "minecraft:infested_chiseled_stone_bricks", "minecraft:infested_cobblestone", "minecraft:infested_cracked_stone_bricks", "minecraft:infested_deepslate", "minecraft:infested_mossy_stone_bricks", "minecraft:infested_stone", "minecraft:infested_stone_bricks", "minecraft:jigsaw", "minecraft:knowledge_book", "minecraft:light", "minecraft:player_head", "minecraft:reinforced_deepslate", "minecraft:repeating_command_block", "minecraft:rooted_dirt", "minecraft:snow", "minecraft.spawner", "minecraft:structure_block", "minecraft:structure_void", "minecraft:test_block", "minecraft:test_instance_block", "minecraft:trial_spawner", "minecraft:vault", "minecraft:dirt_path", "minecraft:frogspawn");
     static ServerBossBar collectedItemsBossbar = new ServerBossBar(Text.translatable("bossbar.all_items.collected_items", collected_items, items.size()), BossBar.Color.BLUE, BossBar.Style.PROGRESS);
     static ServerBossBar nextItemBossbar = new ServerBossBar(Text.translatable("bossbar.all_items.next_item"), BossBar.Color.GREEN, BossBar.Style.PROGRESS);
 
@@ -116,8 +115,8 @@ public class AllItems implements ModInitializer {
         ServerTickEvents.END_WORLD_TICK.register(world -> {
             if (started) {
                 for (ServerPlayerEntity player : world.getServer().getPlayerManager().getPlayerList()) {
-                    Text collectedItemText=null;
-                    String link=null;
+                    Text collectedItemText = null;
+                    String link = null;
                     if (!items.isEmpty()) {
                         ItemStack stack = player.getInventory().getSelectedStack();
                         if (stack != null && stack.getItem() == items.getFirst()) {
@@ -130,7 +129,7 @@ public class AllItems implements ModInitializer {
                             link = AllItems.getObtainingLink();
                         }
                     }
-                    if (collectedItemText!=null && link!=null) {
+                    if (collectedItemText != null && link != null) {
                         player.sendMessage(collectedItemText, false);
                         String finalLink = link;
                         Text howToObtainNextItem = Text.translatable("command.all_items.obtaining_next").styled(style -> style.withClickEvent(new ClickEvent.OpenUrl(URI.create(finalLink))).withUnderline(true));
@@ -213,9 +212,17 @@ public class AllItems implements ModInitializer {
                     collectedItemsBossbar.addPlayer(player);
                 }
                 if (!items.isEmpty()) {
-                    Item nextItem = items.get(0);
                     nextItemBossbar.setPercent((float) collected_items / maxItems);
-                    nextItemBossbar.setName(Text.translatable(nextItem.getTranslationKey()));
+                    Item nextItem = items.get(0);
+                    if (nextItem.toString().contains("minecraft:music_disc_")) {
+                        Item item = nextItem;
+                        String raw = item.toString().replace("minecraft:music_disc_", "");
+                        String name = raw.substring(0, 1).toUpperCase() + raw.substring(1);
+                        Text musicDiscName = Text.translatable(nextItem.getTranslationKey()).append(" ").append(Text.of(name));
+                        nextItemBossbar.setName(musicDiscName);
+                    } else {
+                        nextItemBossbar.setName(Text.translatable(nextItem.getTranslationKey()));
+                    }
                     for (ServerPlayerEntity player : server.getPlayerManager().getPlayerList()) {
                         player.sendMessage(actionbarMessage, true);
                         nextItemBossbar.addPlayer(player);
